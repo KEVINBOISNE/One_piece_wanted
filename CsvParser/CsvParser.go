@@ -13,7 +13,6 @@ type CsvPrime struct {
 	Img   string
 }
 
-// Parse lit un fichier CSV et retourne une liste de primes
 func Parse(path string) ([]CsvPrime, error) {
 
 	file, err := os.Open(path)

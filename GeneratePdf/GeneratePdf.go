@@ -20,32 +20,41 @@ type PdfGenerator struct {
 	TxtCfgText     *config.TextConfig
 }
 
+func getImageByName(name string) string {
+	switch strings.ToUpper(name) {
+	case "LUFFY":
+		return "gear-5-luffy.jpg"
+	case "BAGGY":
+		return "baggy.jpg"
+	case "SHANKS":
+		return "shanks.jpg"
+	case "MARSHALL D.TEACH":
+		return "teach.jpg"
+	default:
+		return "wantedVierge.jpg"
+	}
+}
+
 func GeneratePdf(name string, prime string) error {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.AddPage()
 
-	// Image de fond
 	pdf.Image("wantedVierge.jpg", 20, 20, 170, 0, false, "", 0, "")
 
-	// Texte
 	pdf.SetFont("Arial", "B", 28)
 	pdf.SetTextColor(0, 0, 0)
 
-	// Titre
-	pdf.SetXY(60, 40)
-	pdf.Cell(90, 15, "WANTED")
-
-	// Nom du pirate (VENANT DE MAIN)
 	pdf.SetFont("Arial", "B", 22)
-	pdf.SetXY(60, 70)
-	pdf.Cell(90, 200, name)
+	pdf.SetXY(90, 170)
+	pdf.Cell(40, 80, name)
 
-	// Prime
 	pdf.SetFont("Arial", "", 18)
-	pdf.SetXY(60, 90)
-	pdf.Cell(90, 200, "Prime : "+prime)
+	pdf.SetXY(60, 190)
+	pdf.Cell(40, 80, "Prime : "+prime)
+	imgPath := getImageByName(name)
+	pdf.Image(imgPath, 42, 85, 127, 0, false, "", 0, "")
 
-	return pdf.OutputFileAndClose("wanted.pdf")
+	return pdf.OutputFileAndClose(name + "wanted.pdf")
 }
 
 func NewPdfGenerator(
@@ -81,7 +90,6 @@ func NewPdfGenerator(
 	return pdfGenerator, nil
 }
 
-// GenerateDefaultHeader - This function will generate a default header, for now without image
 func (pg *PdfGenerator) GenerateDefaultHeader(headerText string) {
 	cfg := pg.TxtCfgHeader
 	color := cfg.Color
@@ -89,25 +97,21 @@ func (pg *PdfGenerator) GenerateDefaultHeader(headerText string) {
 		pg.Pdf.SetFont(cfg.FontFamily, cfg.Style, cfg.Size)
 		pg.Pdf.SetTextColor(color.R, color.G, color.B)
 
-		// Calculate width of title and position
 		stringWidth := pg.calculateSize(pg.Pdf.GetStringWidth(headerText) + 6)
 		width, _ := pg.Pdf.GetPageSize()
 		pg.Pdf.SetX((width - stringWidth) / 2)
 
-		// Title
 		pg.Pdf.CellFormat(stringWidth, 9, headerText, "", 0, cfg.Align, false, 0, "")
-		// Line break
+	
 		pg.Pdf.Ln(pg.calculateSize(10))
 	})
 }
 
-// GenerateDefaultFooter - This function will generate a page number and a text that could be left or center aligned
 func (pg *PdfGenerator) GenerateDefaultFooter(text string, pageNumber bool) {
 	cfg := pg.TxtCfgFooter
 	color := cfg.Color
 	pg.Pdf.SetFooterFunc(func() {
 
-		// Position at 1.5 cm from bottom
 		pg.Pdf.SetY(pg.calculateSize(-15))
 
 		pg.Pdf.SetFont(cfg.FontFamily, cfg.Style, cfg.Size)
@@ -116,7 +120,6 @@ func (pg *PdfGenerator) GenerateDefaultFooter(text string, pageNumber bool) {
 			"", 0, cfg.Align, false, 0, "")
 
 		if pageNumber {
-			// page number only black
 			pg.Pdf.SetTextColor(0, 0, 0)
 			pg.Pdf.CellFormat(0, pg.calculateSize(10), fmt.Sprintf("Pág. %d", pg.Pdf.PageNo()),
 				"", 0, constants.AlignRight, false, 0, "")
@@ -132,7 +135,6 @@ func (pg *PdfGenerator) GenerateTitle(title string) {
 	pg.Pdf.CellFormat(0, pg.calculateSize(constants.SizeTitleHeight), title,
 		"", 1, cfg.Align, false, 0, "")
 
-	// Line break
 	pg.Pdf.Ln(constants.SizeLineBreak)
 }
 
@@ -145,7 +147,6 @@ func (pg *PdfGenerator) GenerateSubtitle(subtitle string) {
 	pg.Pdf.CellFormat(0, pg.calculateSize(constants.SizeSubTitleHeight), subtitle,
 		"", 1, cfg.Align, false, 0, "")
 
-	// Line break
 	pg.Pdf.Ln(pg.calculateSize(constants.SizeLineBreak))
 }
 
@@ -156,12 +157,10 @@ func (pg *PdfGenerator) GenerateText(text string) {
 	pg.Pdf.SetFont(cfg.FontFamily, cfg.Style, cfg.Size)
 	pg.Pdf.SetTextColor(color.R, color.G, color.B)
 
-	// replacing line breaks \n on string
 	text = strings.ReplaceAll(text, `\n`, "\n")
 
 	pg.Pdf.MultiCell(0, pg.calculateSize(constants.SizeTextHeight), text, "", cfg.Align, false)
 
-	// Line break
 	pg.Pdf.Ln(-1)
 }
 
