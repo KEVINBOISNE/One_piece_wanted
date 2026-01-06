@@ -1,5 +1,6 @@
 package csvparser
 
+
 import (
 	"encoding/csv"
 	"errors"
