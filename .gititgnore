@@ -1,5 +1,4 @@
-*.pdf
-PDFs/
+.pdf
 
 go.mod
 go.sum

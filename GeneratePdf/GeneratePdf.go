@@ -3,6 +3,8 @@ package GeneratePdf
 import (
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/jung-kurt/gofpdf"
@@ -19,7 +21,6 @@ type PdfGenerator struct {
 	TxtCfgSubtitle *config.TextConfig
 	TxtCfgText     *config.TextConfig
 }
-
 func getImageByName(name string) string {
 	switch strings.ToUpper(name) {
 	case "LUFFY":
@@ -35,14 +36,12 @@ func getImageByName(name string) string {
 	}
 }
 
-func GeneratePdf(name string, prime string) error {
+
+func GeneratePdf(name string, prime string, outputDir string, imgFile string) error {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.AddPage()
 
 	pdf.Image("wantedVierge.jpg", 20, 20, 170, 0, false, "", 0, "")
-
-	pdf.SetFont("Arial", "B", 28)
-	pdf.SetTextColor(0, 0, 0)
 
 	pdf.SetFont("Arial", "B", 22)
 	pdf.SetXY(90, 170)
@@ -51,10 +50,28 @@ func GeneratePdf(name string, prime string) error {
 	pdf.SetFont("Arial", "", 18)
 	pdf.SetXY(60, 190)
 	pdf.Cell(40, 80, "Prime : "+prime)
-	imgPath := getImageByName(name)
-	pdf.Image(imgPath, 42, 85, 127, 0, false, "", 0, "")
 
-	return pdf.OutputFileAndClose(name + "wanted.pdf")
+	imagePath := imgFile
+	if imagePath == "" {
+		imagePath = getImageByName(name)
+	}
+
+	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
+		fmt.Println("Image non trouvée, utilisation du fond vierge :", imagePath)
+	} else {
+		pdf.Image(imagePath, 42, 85, 127, 0, false, "", 0, "")
+	}
+
+	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
+		if err := os.MkdirAll(outputDir, 0755); err != nil {
+			return fmt.Errorf("impossible de créer le dossier %s: %v", outputDir, err)
+		}
+	}
+
+	// Nom du fichier PDF
+	outputFile := filepath.Join(outputDir, fmt.Sprintf("%s_wanted.pdf", strings.ReplaceAll(name, " ", "_")))
+
+	return pdf.OutputFileAndClose(outputFile)
 }
 
 func NewPdfGenerator(

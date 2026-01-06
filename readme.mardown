@@ -1,0 +1,1 @@
+.\MyGeneratorPrime.exe -name "ZORO" -prime "320,000,000" -img "zoro.jpg" -output "pdf"
