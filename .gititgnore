@@ -1,0 +1,6 @@
+*.pdf
+PDFs/
+
+go.mod
+go.sum
+
